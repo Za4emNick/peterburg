@@ -1,7 +1,8 @@
 /*
-  ПРИМЕЧАНИЕ ПО ШРИФТАМ:
-  Заголовки: "BERNIERDISTRESSED" (в архиве файла шрифта нет, поэтому оставлен fallback).
-  Если добавите файл, положите его в /fonts и раскомментируйте @font-face ниже.
+  Примечание по шрифтам:
+  Заголовки рассчитаны на BERNIERDISTRESSED. Файл шрифта не подключен,
+  поэтому используется запасной вариант. Если добавите файл — положите
+  его в /fonts и раскомментируйте @font-face ниже.
 */
 
 /*
@@ -183,11 +184,11 @@ body{
 }
 .material-item:focus{outline:none;}
 .material-item img{height: 70px; width: auto;}
-.material-label{margin-top: 10px; font-size: 14px; color: var(--blue);}
+.material-name{margin-top: 10px; font-size: 14px; color: var(--blue);}
 
-.material-item.active .material-label{color: var(--accent); font-weight: 700;}
+.material-item.active .material-name{color: var(--accent); font-weight: 700;}
 
-.material-popover{
+.materials-popover{
   max-width: 520px;
   margin: 0 auto;
   background: #fff;
@@ -197,26 +198,41 @@ body{
   padding: 12px 14px;
   display: none;
 }
-.material-popover .pop-title{
+.materials-popover__title{
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: .8px;
   color: rgba(79,111,138,.9);
   margin-bottom: 8px;
 }
-.material-popover ul{
+.materials-popover ul{
   margin: 0;
   padding-left: 16px;
   columns: 2;
 }
-.material-popover li{margin-bottom: 6px; font-size: 14px;}
+.materials-popover li{margin-bottom: 6px; font-size: 14px;}
 
-.material-notes{
+.materials-note{
   border-top: 2px solid var(--line);
   margin-top: 14px;
   padding-top: 14px;
   text-align: center;
   font-size: 14px;
+}
+
+.materials-inline{
+  max-width: 640px;
+  margin: 0 auto;
+}
+.materials-inline__title{
+  font-weight: 700;
+  color: var(--blue);
+}
+.materials-inline__text{
+  color: rgba(0,0,0,.75);
+}
+.two-col{
+  columns: 2;
 }
 
 /* TARIFFS */
@@ -341,5 +357,6 @@ body{
   .h-title{font-size: 44px;}
   .hero{padding-top: 95px;}
   .paper-card{padding: 26px 20px;}
-  .material-popover ul{columns:1;}
+  .materials-popover ul{columns:1;}
+  .two-col{columns:1;}
 }
