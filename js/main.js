@@ -1,12 +1,12 @@
 /*
-  jQuery 3 динамика:
-  - Плавный скролл по якорям
-  - Переключение валют и пересчет цен (пример: 70 ₽ = 1 $)
-  - Открытие списка красок
+  Небольшая jQuery-логика для страницы:
+  - плавный скролл по якорям
+  - пересчет цен при смене валюты
+  - подсказки по материалам
   - FAQ-аккордеон
 */
 
-(function($){
+(function($) {
   'use strict';
 
   var symbols = {
@@ -16,20 +16,44 @@
     EUR: '€'
   };
 
-  function formatMoney(num){
+  var rates = {
+    RUB: 1,
+    USD: 70,
+    EUR: 80,
+    UAH: 2.4
+  };
+
+  var materialsText = {
+    paints: {
+      title: 'Список красок',
+      text: 'Ниже полный список используемых оттенков.'
+    },
+    brushes: {
+      title: 'Кисти',
+      text: 'Круглые № 2–6, плоская 10–12, мягкая синтетика.'
+    },
+    paper: {
+      title: 'Бумага',
+      text: 'Хлопок 300 г/м², холодное прессование. Формат — по желанию.'
+    },
+    pencil: {
+      title: 'Карандаш',
+      text: 'Обычный 2B или 3B для набросков.'
+    }
+  };
+
+  function formatMoney(num) {
     var n = Math.round(num);
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
-  function convertFromRub(rub, code){
-    if(code === 'RUB') return rub;
-    if(code === 'USD') return rub / 70; // по ТЗ пример
-    if(code === 'EUR') return rub / 80; // условно
-    if(code === 'UAH') return rub / 2.4; // условно
-    return rub;
+  function convertFromRub(rub, code) {
+    var rate = rates[code] || 1;
+    if (code === 'RUB') return rub;
+    return rub / rate;
   }
 
-  function setPricesIn($block, code){
+  function setPricesIn($block, code) {
     var rubNew = parseFloat($block.attr('data-rub')) || 0;
     var rubOld = parseFloat($block.attr('data-rub-old')) || 0;
 
@@ -41,15 +65,32 @@
     $block.find('.js-cur-symbol').text(symbols[code] || '₽');
   }
 
-  function setCurrencyGlobal(code){
-    $('.prices').each(function(){
+  function setCurrencyGlobal(code) {
+    $('.prices').each(function() {
       setPricesIn($(this), code);
     });
   }
 
-  $(function(){
-    // Smooth scroll
-    $('.js-scroll').on('click', function(e){
+  function setMaterialsInline(key) {
+    var info = materialsText[key];
+    if (!info) return;
+    $('#materialsInline').find('.materials-inline__title').text(info.title);
+    $('#materialsInline').find('.materials-inline__text').text(info.text);
+  }
+
+  function toggleMaterialsPopover(show) {
+    var $popover = $('#materialsPopover');
+    if (!$popover.length) return;
+    if (show) {
+      $popover.stop(true, true).fadeIn(150);
+    } else {
+      $popover.stop(true, true).fadeOut(150);
+    }
+  }
+
+  $(function() {
+    // Плавный скролл
+    $('.js-scroll').on('click', function(e) {
       var href = $(this).attr('href');
       if(!href || href.charAt(0) !== '#') return;
       var $t = $(href);
@@ -60,28 +101,24 @@
       $('.navbar-collapse').collapse('hide');
     });
 
-    // Materials popover (paints)
-    $('.material-item').on('click', function(){
+    // Материалы
+    $('.material-item').on('click', function() {
       var key = $(this).data('material');
-      if(key !== 'paints') return;
-      var $popover = $('#paintsPopover');
-      if($popover.is(':visible')) {
-        $popover.stop(true,true).fadeOut(150);
-      } else {
-        $popover.stop(true,true).fadeIn(150);
-      }
+      if (!key) return;
+      $('.material-item').removeClass('active');
+      $(this).addClass('active');
+      setMaterialsInline(key);
+      toggleMaterialsPopover(key === 'paints');
     });
 
-    // hide popover on outside click
-    $(document).on('click', function(e){
-      var $pop = $('#paintsPopover');
-      if(!$pop.length) return;
-      if($(e.target).closest('.material-item, #paintsPopover').length) return;
-      $pop.stop(true,true).fadeOut(150);
+    // Закрытие поповера по клику вне блока
+    $(document).on('click', function(e) {
+      if ($(e.target).closest('.material-item, #materialsPopover').length) return;
+      toggleMaterialsPopover(false);
     });
 
-    // Currency switch (per-card)
-    $('.currency-switch').on('click', '.cur-btn', function(){
+    // Переключатель валюты (в каждой карточке свой)
+    $('.currency-switch').on('click', '.cur-btn', function() {
       var $btn = $(this);
       var raw = ($btn.data('currency') || 'rub').toString().toLowerCase();
       var code = raw === 'usd' ? 'USD' : raw === 'eur' ? 'EUR' : raw === 'uah' ? 'UAH' : 'RUB';
@@ -92,14 +129,14 @@
       setPricesIn($wrap, code);
     });
 
-    // Join buttons demo
-    $('.js-join').on('click', function(e){
+    // Демо-отправка
+    $('.js-join').on('click', function(e) {
       e.preventDefault();
       alert('Заявка отправлена! (демо)');
     });
 
-    // FAQ accordion
-    $('.faq-item .faq-q').on('click', function(){
+    // FAQ-аккордеон
+    $('.faq-item .faq-q').on('click', function() {
       var $item = $(this).closest('.faq-item');
       var $a = $item.find('.faq-a');
 
@@ -113,9 +150,11 @@
       }
     });
 
-    // Init default currency and initial FAQ state
+    // Инициализация
     setCurrencyGlobal('RUB');
     $('.faq-item.is-open').addClass('open').find('.faq-a').show();
+    setMaterialsInline('paints');
+    $('.material-item[data-material="paints"]').addClass('active');
   });
 
 })(jQuery);
